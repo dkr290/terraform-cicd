@@ -1,0 +1,17 @@
+.terraform/
+id_rsa
+id_rsa.pub
+*.priv
+*.pub
+terraform.tfplan
+terraform.tfstate
+.terraform/
+./*.tfstate
+*.backup
+*.DS_Store
+*.log
+*.bak
+*~
+.*.swp
+.project
+vm_key

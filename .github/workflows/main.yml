@@ -50,3 +50,14 @@ jobs:
 
       - name: Run TFLint
         run: tflint -f compact
+
+      - name: Azure login
+        uses: azure/actions/login@v1
+        with: # Set Azure credentials secret as an input
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: terraform init
+        run: |
+          cd single-linux-vm-k8s-userdata
+          terraform init
+        
