@@ -53,7 +53,7 @@ jobs:
 
       - name: Azure login
         uses: azure/actions/login@v1
-        with: # Set Azure credentials secret as an input
+        with:  # Set Azure credentials secret as an input
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: terraform init
