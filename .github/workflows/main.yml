@@ -71,4 +71,4 @@ jobs:
         run: ssh-keygen -q -t rsa -N '' -f vm_key <<<y >/dev/null 2>&1
         
       - name: terraform plan
-        run: terrafrom plan
+        run: terraform plan
