@@ -84,12 +84,9 @@ jobs:
         id: plan
         run: terraform plan -out=tfplan
 
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve  "tfplan" 
-
   terraform-apply:
     name: 'Terraform apply'
+    needs: terraform-plan
     env:
       ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
