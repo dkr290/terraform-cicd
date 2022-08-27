@@ -31,6 +31,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+
+      - name: Azure login
+        uses: azure/actions/login@v1
+        with:  # Set Azure credentials secret as an input
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
       - name: Install Terraform
         uses: little-core-labs/install-terraform@v2.0.0
         with:
@@ -53,10 +59,7 @@ jobs:
       - name: Run TFLint
         run: tflint -f compact
 
-      - name: Azure login
-        uses: azure/actions/login@v1
-        with:  # Set Azure credentials secret as an input
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
 
       - name: terraform init
         run: |
