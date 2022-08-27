@@ -68,7 +68,11 @@ jobs:
           terraform init
       
       - name: create ssh keys
-        run: ssh-keygen -q -t rsa -N '' -f vm_key <<<y >/dev/null 2>&1
+        run: | 
+          cd single-linux-vm-k8s-userdata
+          ssh-keygen -q -t rsa -N '' -f vm_key <<<y >/dev/null 2>&1
         
       - name: terraform plan
-        run: terraform plan
+        run:  |
+          cd single-linux-vm-k8s-userdata
+          terraform plan
