@@ -1,0 +1,150 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Terraform CICD
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  T_VERSION: 1.2.8
+  tf_actions_working_dir: single-linux-vm-k8s-userdata
+
+  # Allows you to run this workflow manually from the Actions tab
+  
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  terraform-plan:
+    name: 'Terraform plan'
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+    
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    environment: terraform-plan-development
+
+    defaults:
+      run:
+        working-directory: ${{ env.tf_actions_working_dir }}
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+         
+
+         
+      - name: Install Terraform
+        uses: little-core-labs/install-terraform@v2.0.0
+        with:
+          version: ${T_VERSION}
+      
+      - name: show terraform version
+        run: terraform version
+    
+      - uses: terraform-linters/setup-tflint@v2
+        name: Setup TFLint
+        with:
+          tflint_version: latest
+
+      - name: Show version
+        run: tflint --version
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint -f compact
+
+      
+
+      - name: terraform init
+        id: init
+        run: terraform init
+      
+      - name: create ssh keys
+        run: ssh-keygen -q -t rsa -N '' -f vm_key <<<y >/dev/null 2>&1
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+        
+      - name: terraform plan
+        id: plan
+        run: terraform plan -out=tfplan
+
+  terraform-apply:
+    name: 'Terraform apply'
+    needs: terraform-plan
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+    
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    environment: development
+
+    defaults:
+      run:
+        working-directory: ${{ env.tf_actions_working_dir }}
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps: 
+     
+      - uses: actions/checkout@v3
+      
+      - name: Install Terraform
+        uses: little-core-labs/install-terraform@v2.0.0
+        with:
+          version: ${T_VERSION}
+      
+      - name: show terraform version
+        run: terraform version
+    
+      - uses: terraform-linters/setup-tflint@v2
+        name: Setup TFLint
+        with:
+          tflint_version: latest
+
+      - name: Show version
+        run: tflint --version
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint -f compact
+
+      
+
+      - name: terraform init
+        id: init
+        run: terraform init
+      
+      - name: create ssh keys
+        run: ssh-keygen -q -t rsa -N '' -f vm_key <<<y >/dev/null 2>&1
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+
+      - name: terraform plan
+        id: plan
+        run: terraform plan -out=tfplan 
+      
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve  "tfplan"
